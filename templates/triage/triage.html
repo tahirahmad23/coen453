@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}CampusTriage — Health Check{% endblock %}
+
+{% block content %}
+<div class="max-w-sm mx-auto space-y-6">
+    <!-- Progress bar -->
+    <div class="space-y-2">
+        <div class="flex justify-between text-xs uppercase tracking-widest text-slate-500 font-mono">
+            <span>Question {{ progress.current }} of ~{{ progress.total }}</span>
+            <span>{{ progress.percent }}% complete</span>
+        </div>
+        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-emerald-400 rounded-full transition-all duration-500 ease-out"
+                style="width: {{ progress.percent }}%;"></div>
+        </div>
+    </div>
+
+    <!-- HTMX target container -->
+    <div id="question-container" aria-live="polite" aria-atomic="true">
+        {% include "engine/question_card.html" %}
+    </div>
+
+    <!-- Restart option -->
+    <div class="text-center pt-4">
+        <form hx-post="/api/v1/engine/restart"
+            hx-confirm="Are you sure you want to restart? Your current progress will be lost.">
+            <button type="submit"
+                class="text-xs text-slate-600 hover:text-red-400 transition-colors uppercase tracking-widest font-mono">
+                Restart Triage Session
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

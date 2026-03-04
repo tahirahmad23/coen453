@@ -1,0 +1,81 @@
+{% from "components/macros.html" import badge %}
+
+{% set status_variants = {
+'draft': 'slate',
+'pending_approval': 'yellow',
+'active': 'green',
+'archived': 'red'
+} %}
+
+<div id="flow-card-{{ flow.id }}"
+    class="group relative bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/50 transition-all duration-300 shadow-xl"
+    {% if hx_swap_oob %}hx-swap-oob="{{ hx_swap_oob }}" {% endif %}>
+
+    <div class="flex items-start justify-between mb-4">
+        <div class="space-y-1">
+            <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                <a href="/admin/flows/{{ flow.id }}">{{ flow.name }}</a>
+            </h3>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="font-mono">v{{ flow.version }}</span>
+                <span>•</span>
+                <span>{{ flow.created_at.strftime('%Y-%m-%d') }}</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            {# Edit/Delete icons for Draft and Archived flows - admins can manage all #}
+            {% if (flow.status == 'draft' or flow.status == 'archived') and user.role == 'admin' %}
+            <button hx-get="/admin/flows/{{ flow.id }}/edit-modal" hx-target="#modal-container"
+                class="p-1.5 text-slate-500 hover:text-blue-400 transition-colors" title="Edit Flow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                    </path>
+                </svg>
+            </button>
+            <button hx-delete="/api/v1/admin/flows/{{ flow.id }}" hx-confirm="Delete this flow?"
+                hx-target="#flow-card-{{ flow.id }}" hx-swap="delete"
+                class="p-1.5 text-slate-500 hover:text-red-500 transition-colors" title="Delete Flow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                </svg>
+            </button>
+            {% endif %}
+            {{ badge(flow.status|replace('_', ' ')|capitalize, variant=status_variants[flow.status]) }}
+        </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-between gap-3">
+        <a href="/admin/flows/{{ flow.id }}"
+            class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
+            View Detail
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </a>
+
+        {% if flow.status == 'draft' and user.role == 'admin' %}
+        <button hx-put="/api/v1/admin/flows/{{ flow.id }}/submit" hx-target="#flow-card-{{ flow.id }}"
+            hx-swap="outerHTML"
+            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-all">
+            Submit
+        </button>
+        {% elif flow.status == 'archived' and user.role == 'admin' %}
+        <button hx-put="/api/v1/admin/flows/{{ flow.id }}/reactivate" hx-target="body"
+            hx-confirm="Reactivate this flow? This will archive the currently active flow."
+            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-500 transition-all">
+            Reactivate
+        </button>
+        {% endif %}
+
+        {% if flow.status == 'pending_approval' and (flow.created_by != user.id or user.role == 'admin') %}
+        <button hx-put="/api/v1/admin/flows/{{ flow.id }}/approve" hx-target="body"
+            hx-confirm="Are you sure you want to make this flow ACTIVE?"
+            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-all">
+            Approve
+        </button>
+        {% endif %}
+    </div>
+</div>

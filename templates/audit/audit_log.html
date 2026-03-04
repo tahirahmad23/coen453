@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge %}
+
+{% block title %}Audit Log — Admin — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white">System Audit Log</h1>
+            <p class="text-slate-400">Immutable record of all critical system actions.</p>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <form hx-get="/api/v1/admin/audit" hx-target="#audit-table-container"
+            hx-trigger="change delay:200ms, filter-update from:body"
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold ml-1">Action</label>
+                <select name="action"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:ring-1 focus:ring-blue-500 outline-none">
+                    <option value="all">All Actions</option>
+                    <option value="USER_CREATED">User Created</option>
+                    <option value="FLOW_APPROVED">Flow Approved</option>
+                    <option value="CASE_CREATED">Case Created</option>
+                    <option value="TOKEN_ISSUED">Token Issued</option>
+                    <option value="TOKEN_USED">Token Used</option>
+                    <option value="IMPORT_COMPLETED">Import Completed</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold ml-1">Target</label>
+                <select name="target_type"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:ring-1 focus:ring-blue-500 outline-none">
+                    <option value="all">All Targets</option>
+                    <option value="user">User</option>
+                    <option value="flow">Flow</option>
+                    <option value="case">Case</option>
+                    <option value="token">Token</option>
+                    <option value="import">Import</option>
+                </select>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold ml-1">From Date</label>
+                <input type="date" name="date_from"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase tracking-wider text-slate-500 font-bold ml-1">To Date</label>
+                <input type="date" name="date_to"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-300 focus:ring-1 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div class="flex items-end">
+                <button type="submit"
+                    class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/20">
+                    Filter Results
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Container -->
+    <div id="audit-table-container">
+        {% include "audit/partials/audit_table.html" %}
+    </div>
+</div>
+
+<div id="modal-container"></div>
+{% endblock %}

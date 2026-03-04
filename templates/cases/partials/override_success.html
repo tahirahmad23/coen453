@@ -1,0 +1,30 @@
+{% from "components/macros.html" import alert, badge %}
+
+<div id="override-section" class="space-y-4 animate-in fade-in duration-500">
+    {{ alert("Override applied successfully. The case has been updated.", type="success") }}
+
+    <div class="p-5 bg-slate-900 border border-emerald-400/20 rounded-xl space-y-4">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">New Outcome</p>
+                {% set variant = 'green' if getattr(case, 'outcome', None).value == 'SELF_CARE' else 'blue' if
+                getattr(case,
+                'outcome', None).value == 'PHARMACY' else 'yellow' if getattr(case, 'outcome', None).value == 'CLINIC'
+                else 'red' %}
+                {{ badge(case.outcome.value, variant=variant) }}
+            </div>
+            <div>
+                <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Status</p>
+                {{ badge('OVERRIDDEN', variant='purple') }}
+            </div>
+        </div>
+        <div>
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Clinician Note</p>
+            <p class="text-sm text-slate-300 italic">"{{ case.override_note }}"</p>
+        </div>
+        <p class="text-[10px] text-slate-600">This action has been logged to the audit log.</p>
+    </div>
+
+    <button onclick="window.location.reload()" class="text-xs text-emerald-400 hover:underline">Refresh page to see full
+        layout</button>
+</div>

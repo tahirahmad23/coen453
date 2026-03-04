@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import card, btn %}
+{% block title %}Sandbox — Flow Simulation{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-2xl mx-auto">
+    <div class="flex items-center gap-4">
+        <a href="/admin/flows" class="text-slate-500 hover:text-slate-300 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-slate-100">Rule Logic Sandbox</h1>
+    </div>
+
+    {% call card(title="Simulate Symptoms", accent="blue") %}
+    <p class="text-sm text-slate-400 mb-6">
+        Run a simulation to verify rule pathways trigger correctly. Not currently connected directly.
+    </p>
+
+    <div class="p-12 border border-dashed border-slate-700 bg-slate-800/50 rounded-xl text-center">
+        <div class="w-16 h-16 rounded-full bg-blue-400/10 text-blue-400 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.823.362 2.25 2.25 0 00-1.383 1.45L2.137 20.87a2.25 2.25 0 002.73 2.73l3.847-.71a2.25 2.25 0 001.45-1.383l.254-.712">
+                </path>
+            </svg>
+        </div>
+        <h3 class="font-bold text-slate-200">Sandbox Component</h3>
+        <p class="text-sm text-slate-500 mt-2">Simulation framework is coming in the phase 2 engine rewrite.</p>
+    </div>
+    {% endcall %}
+</div>
+{% endblock %}

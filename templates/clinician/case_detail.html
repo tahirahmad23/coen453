@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge, field %}
+
+{% block title %}Case Review — #{{ case.id | string | truncate(8, True, "") }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center gap-4">
+        <a href="/clinician/cases" class="text-slate-500 hover:text-slate-300 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18">
+                </path>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-slate-100">Reviewing Case #{{ case.id | string | truncate(8, True, "") }}
+        </h1>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Summary Stats -->
+        <div class="md:col-span-1 space-y-6">
+            {% call card(title="Case Info") %}
+            <div class="space-y-4">
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Outcome</p>
+                    {% set variant = 'green' if getattr(case, 'outcome', None) == 'SELF_CARE' else 'blue' if
+                    getattr(case, 'outcome', None) == 'PHARMACY' else 'yellow' if getattr(case, 'outcome', None) ==
+                    'CLINIC' else 'red' %}
+                    {{ badge(case.outcome, variant=variant) }}
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Status</p>
+                    {{ badge(case.status, variant='purple' if case.status == 'OVERRIDDEN' else 'green' if case.status ==
+                    'TRIAGED' else 'yellow') }}
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Severity Score</p>
+                    <p class="text-xl font-bold text-slate-100">{{ case.score }}</p>
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Flagged</p>
+                    {{ badge('RED FLAG' if case.is_flagged else 'NORMAL', variant='red' if case.is_flagged else 'green')
+                    }}
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Assessment Duration
+                    </p>
+                    <p class="text-sm text-slate-300">{{ case.duration_secs or 'Unknown' }} seconds</p>
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Created At</p>
+                    <p class="text-sm text-slate-300">{{ case.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</p>
+                </div>
+            </div>
+            {% endcall %}
+
+            {% if case.status == 'OVERRIDDEN' %}
+            {% call card(title="Override Details", accent="purple") %}
+            <div class="space-y-4">
+                <p class="text-sm text-slate-300 italic">"{{ case.override_note }}"</p>
+                <div class="pt-2 border-t border-slate-800">
+                    <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Applied by</p>
+                    <p class="text-xs text-slate-400">{{ case.overridden_by | string | truncate(12) }}</p>
+                </div>
+            </div>
+            {% endcall %}
+            {% endif %}
+        </div>
+
+        <!-- Answers Detail -->
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="px-5 py-3 border-b border-slate-700 bg-slate-800">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Symptoms & Responses</h3>
+                </div>
+                <div class="divide-y divide-slate-800">
+                    {% for question, answer in answers.items() %}
+                    <div class="p-5 hover:bg-slate-800/50 transition-colors">
+                        <p class="text-[10px] uppercase font-bold tracking-widest text-slate-600 mb-1">{{ question }}
+                        </p>
+                        <p class="text-slate-100 font-medium">{{ answer }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if case.status != 'OVERRIDDEN' and case.status != 'CLOSED' %}
+            <div id="override-section">
+                {% call card(title="Apply Outcome Override", accent="yellow") %}
+                <form hx-put="/api/v1/cases/{{ case.id }}/override" hx-target="#override-section" hx-swap="outerHTML"
+                    class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1.5">New
+                            Outcome <span class="text-red-400">*</span></label>
+                        <select name="new_outcome"
+                            class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 focus:ring-emerald-400/50"
+                            required>
+                            <option value="SELF_CARE" {% if getattr(case, 'outcome' , None)=='SELF_CARE' %}selected{%
+                                endif %}>SELF_CARE</option>
+                            <option value="PHARMACY" {% if getattr(case, 'outcome' , None)=='PHARMACY' %}selected{%
+                                endif %}>PHARMACY</option>
+                            <option value="CLINIC" {% if getattr(case, 'outcome' , None)=='CLINIC' %}selected{% endif
+                                %}>CLINIC</option>
+                            <option value="EMERGENCY" {% if getattr(case, 'outcome' , None)=='EMERGENCY' %}selected{%
+                                endif %}>EMERGENCY</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-[10px] uppercase font-bold tracking-widest text-slate-400">Override
+                            Note <span class="text-red-400">*</span></label>
+                        <textarea name="override_note" required minlength="10"
+                            placeholder="Clinical justification for this override..."
+                            class="w-full h-24 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-100 placeholder-slate-600 focus:ring-emerald-400/50"></textarea>
+                        <p class="text-[10px] text-slate-500">Minimum 10 characters required. Logged to system audit
+                            trail.</p>
+                    </div>
+                    {{ btn("Update Outcome", type="submit", variant="secondary") }}
+                </form>
+                {% endcall %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge %}
+
+{% block title %}Case Review — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-end">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-100">Case Review Dashboard</h1>
+            <p class="text-slate-500 text-sm">Analyze triage outcomes and apply overrides.</p>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="p-4 bg-slate-900 border border-slate-700 rounded-xl">
+        <form hx-get="/clinician/cases" hx-target="#case-table-container" hx-swap="outerHTML" hx-push-url="true"
+            class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+                <label
+                    class="block text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1.5">Outcome</label>
+                <select name="outcome"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:ring-emerald-400/50">
+                    <option value="">All Outcomes</option>
+                    <option value="SELF_CARE" {% if filters.outcome=='SELF_CARE' %}selected{% endif %}>SELF_CARE
+                    </option>
+                    <option value="PHARMACY" {% if filters.outcome=='PHARMACY' %}selected{% endif %}>PHARMACY</option>
+                    <option value="CLINIC" {% if filters.outcome=='CLINIC' %}selected{% endif %}>CLINIC</option>
+                    <option value="EMERGENCY" {% if filters.outcome=='EMERGENCY' %}selected{% endif %}>EMERGENCY
+                    </option>
+                </select>
+            </div>
+            <div>
+                <label
+                    class="block text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1.5">Status</label>
+                <select name="status"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:ring-emerald-400/50">
+                    <option value="">All Statuses</option>
+                    <option value="TRIAGED" {% if filters.status and filters.status.value=='TRIAGED' %}selected{% endif
+                        %}>TRIAGED</option>
+                    <option value="OVERRIDDEN" {% if filters.status and filters.status.value=='OVERRIDDEN' %}selected{%
+                        endif %}>OVERRIDDEN
+                    </option>
+                    <option value="CLOSED" {% if filters.status and filters.status.value=='CLOSED' %}selected{% endif
+                        %}>CLOSED</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1.5">Date
+                    From</label>
+                <input type="date" name="date_from" value="{{ filters.date_from or '' }}"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:ring-emerald-400/50">
+            </div>
+            <div>
+                {{ btn("Apply Filters", type="submit", variant="secondary") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Container -->
+    <div id="case-table-container">
+        {% include "clinician/partials/case_table.html" %}
+    </div>
+</div>
+{% endblock %}

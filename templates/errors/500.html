@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Server Error{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto text-center py-20 space-y-5">
+    <p class="text-6xl">⚠️</p>
+    <h1 class="text-2xl font-bold">Something went wrong</h1>
+    <p class="text-slate-400 text-sm">
+        We've been notified and are looking into it. Please try again in a moment.
+    </p>
+    <a href="/" class="inline-block px-5 py-2.5 bg-slate-800 border border-slate-700
+    text-slate-100 rounded-lg text-sm font-bold">Go home</a>
+</div>
+{% endblock %}

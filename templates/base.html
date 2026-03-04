@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#3dffa0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Campus medical pre-triage system">
+    <title>{% block title %}CampusTriage{% endblock %} — CampusTriage</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.3/dist/htmx.min.js"></script>
+
+    <style>
+        /* HTMX loading states */
+        .htmx-indicator {
+            opacity: 0;
+            transition: opacity 200ms ease;
+        }
+
+        .htmx-request .htmx-indicator,
+        .htmx-request.htmx-indicator {
+            opacity: 1;
+        }
+
+        /* EMERGENCY pulsing border */
+        @keyframes pulse-border {
+
+            0%,
+            100% {
+                border-color: rgb(248 113 113);
+            }
+
+            50% {
+                border-color: rgb(239 68 68);
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            }
+        }
+
+        .emergency-pulse {
+            animation: pulse-border 1.5s ease-in-out infinite;
+        }
+
+        /* Flash dismiss animation */
+        @keyframes flash-dismiss {
+
+            0%,
+            80% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-8px);
+                pointer-events: none;
+            }
+        }
+
+        .flash-auto-dismiss {
+            animation: flash-dismiss 5s ease-out forwards;
+        }
+
+        /* Mobile safe area padding */
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 16px);
+        }
+    </style>
+
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body class="h-full bg-slate-950 text-slate-100 antialiased">
+
+    {% include "components/navbar.html" %}
+
+    <div id="flash-container" class="fixed top-16 left-0 right-0 z-50 px-4 pointer-events-none">
+        {% include "components/flash.html" %}
+    </div>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 md:px-8 safe-bottom" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- PWA Install Banner (hidden by default, shown by JS when installable) -->
+    <!-- <div id="pwa-install-banner" class="hidden fixed bottom-4 left-4 right-4 z-50
+    bg-slate-800 border border-emerald-400/30 rounded-xl p-4 shadow-2xl
+    flex items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-semibold">Install CampusTriage</p>
+            <p class="text-xs text-slate-400">Add to your home screen for quick access</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+            <button onclick="installPWA()"
+                class="px-3 py-1.5 bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold">
+                Install
+            </button>
+            <button onclick="document.getElementById('pwa-install-banner').classList.add('hidden')"
+                class="px-3 py-1.5 text-slate-400 text-xs">
+                Not now
+            </button>
+        </div>
+    </div> -->
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <script>
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('pwa-install-banner').classList.remove('hidden');
+        });
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                document.getElementById('pwa-install-banner').classList.add('hidden');
+            }
+        }
+
+        // Service worker registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js');
+        }
+    </script>
+
+    {% block scripts_extra %}{% endblock %}
+</body>
+
+</html>

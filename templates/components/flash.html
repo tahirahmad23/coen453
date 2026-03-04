@@ -1,0 +1,20 @@
+{% if request.session.get('flash') %}
+{% set flash = request.session.pop('flash') %}
+<div class="flash-auto-dismiss pointer-events-auto max-w-sm mx-auto mt-2">
+    <div class="flex items-center gap-3 px-4 py-3 rounded-lg border text-sm shadow-lg
+    {% if flash.type == 'success' %}bg-emerald-950 border-emerald-500/30 text-emerald-300{% endif %}
+    {% if flash.type == 'error' %}bg-red-950 border-red-500/30 text-red-300{% endif %}
+    {% if flash.type == 'info' %}bg-blue-950 border-blue-500/30 text-blue-300{% endif %}
+    {% if flash.type == 'warning' %}bg-yellow-950 border-yellow-500/30 text-yellow-300{% endif %}
+  ">
+        <!-- Icon based on type -->
+        {% if flash.type == 'success' %}
+        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+        </svg>
+        {% endif %}
+        <span>{{ flash.message }}</span>
+    </div>
+</div>
+{% endif %}

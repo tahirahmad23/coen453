@@ -1,0 +1,47 @@
+<div class="w-full space-y-6 animate-in fade-in zoom-in duration-300">
+    <div class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+        <div class="space-y-1">
+            <span class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Recommended Outcome</span>
+            <div class="flex items-center gap-3">
+                {% set variant_map = {
+                'SELF_CARE': 'green',
+                'PHARMACY': 'blue',
+                'CLINIC': 'yellow',
+                'EMERGENCY': 'red'
+                } %}
+                <span
+                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-{{ variant_map[result.outcome] }}-500/10 text-{{ variant_map[result.outcome] }}-400 border border-{{ variant_map[result.outcome] }}-500/20">
+                    {{ result.outcome }}
+                </span>
+                <span class="text-sm font-mono text-slate-400">Score: {{ result.score }}</span>
+            </div>
+        </div>
+        {% if result.is_flagged %}
+        <div class="flex flex-col items-center px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <span class="text-[10px] text-red-400 font-bold uppercase">Red Flag</span>
+            <span class="text-xs text-red-500 font-black">TRIGGERED</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-3">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Decision Path Taken</h4>
+        <div class="relative overflow-hidden bg-slate-950 rounded-xl border border-slate-800 p-4">
+            <div class="flex flex-wrap items-center gap-2">
+                {% for node_id in result.path_taken %}
+                <div class="group relative">
+                    <div
+                        class="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-[10px] font-mono text-slate-300 hover:border-blue-500 transition-colors">
+                        {{ node_id }}
+                    </div>
+                </div>
+                {% if not loop.last %}
+                <svg class="w-3 h-3 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="9 5l7 7-7 7" />
+                </svg>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

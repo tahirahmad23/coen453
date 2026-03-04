@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import badge, card %}
+
+{% block title %}Dashboard — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-10">
+    <!-- Greeting & Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white font-outfit">Welcome back, {{ user.email.split('@')[0] }}</h1>
+            <p class="text-slate-400 mt-1">
+                You are logged in as <span class="text-emerald-400 font-semibold">{{ user.role.value|capitalize
+                    }}</span>
+            </p>
+        </div>
+        <div class="text-xs text-slate-500 font-mono bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+            {{ now().strftime('%A, %b %d') }}
+        </div>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    {% if user.role.value == 'student' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <a href="/triage"
+            class="group p-8 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition-all duration-300 shadow-xl space-y-4">
+            <div
+                class="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                🩺</div>
+            <div>
+                <h2 class="text-xl font-bold text-white">New Assessment</h2>
+                <p class="text-slate-400 text-sm mt-1">Start a private medical triage session.</p>
+            </div>
+        </a>
+        <a href="/cases/history"
+            class="group p-8 bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl transition-all duration-300 shadow-xl space-y-4">
+            <div
+                class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                📋</div>
+            <div>
+                <h2 class="text-xl font-bold text-white">My History</h2>
+                <p class="text-slate-400 text-sm mt-1">Review your past cases and active tokens.</p>
+            </div>
+        </a>
+    </div>
+
+    {% if recent_case %}
+    <div class="space-y-4">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Most Recent Case</h3>
+        <div
+            class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-lg">📄</div>
+                <div>
+                    {% set outcome_variant = {
+                    'SELF_CARE': 'green',
+                    'PHARMACY': 'blue',
+                    'CLINIC': 'yellow',
+                    'EMERGENCY': 'red'
+                    }[recent_case.outcome.value] %}
+                    {{ badge(recent_case.outcome.value, variant=outcome_variant) }}
+                    <p class="text-xs text-slate-500 mt-1">{{ recent_case.created_at.strftime('%d %b, %H:%M') }}</p>
+                </div>
+            </div>
+            <a href="/cases/{{ recent_case.id }}"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition-colors text-center">
+                View Details
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- CLINICIAN DASHBOARD -->
+    {% elif user.role.value == 'clinician' %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Case Queue (Priority)</h3>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800 overflow-hidden">
+                {% for case in priority_cases %}
+                <div class="p-4 hover:bg-slate-800/50 transition-colors flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-2 h-2 rounded-full {% if case.is_flagged %}bg-red-500 animate-pulse{% else %}bg-slate-700{% endif %}">
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-white">{{ case.id|string|truncate(8, True, '') }}</p>
+                            <p class="text-xs text-slate-500">{{ case.created_at.strftime('%H:%M') }}</p>
+                        </div>
+                    </div>
+                    {{ badge(case.outcome.value, variant='slate') }}
+                    <a href="/clinician/cases/{{ case.id }}"
+                        class="text-blue-400 hover:text-blue-300 text-xs font-bold">Review</a>
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-slate-500 text-sm">No pending cases.</div>
+                {% endfor %}
+            </div>
+            <a href="/clinician/cases"
+                class="block text-center py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm font-medium text-slate-400 hover:text-white transition-all">
+                View Full Patient Queue
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">System Metrics</h3>
+            <div class="bg-indigo-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20">
+                <p class="text-indigo-100 text-xs font-bold uppercase tracking-widest">Total Cases</p>
+                <p class="text-4xl font-bold mt-1">{{ summary.total_cases }}</p>
+                <div class="mt-4 pt-4 border-t border-indigo-400/30 flex justify-between">
+                    <div>
+                        <p class="text-[10px] text-indigo-200 uppercase">Flagged</p>
+                        <p class="font-bold text-red-200">{{ summary.flagged_cases }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-indigo-200 uppercase">Tokens</p>
+                        <p class="font-bold font-outfit">{{ summary.tokens_issued }}</p>
+                    </div>
+                </div>
+            </div>
+            <a href="/analytics"
+                class="group p-5 bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl transition-all flex items-center justify-between">
+                <span class="text-sm font-bold text-white">Full Analytics</span>
+                <svg class="w-5 h-5 text-slate-500 group-hover:text-blue-400 transition-colors" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- PHARMACIST DASHBOARD -->
+    {% elif user.role.value == 'pharmacist' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="space-y-6">
+            <a href="/pharmacy/validate"
+                class="group p-10 bg-blue-600 hover:bg-blue-500 rounded-2xl shadow-xl shadow-blue-500/20 transition-all flex flex-col items-center justify-center text-center space-y-4">
+
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Validate Token</h2>
+                    <p class="text-blue-100 mt-1">Validate a prescription medicine token.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">Recent Validations</h3>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800">
+                {% for token in recent_validations %}
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-white">Token #{{ token.token_hash[:6]|upper }}</p>
+                        <p class="text-xs text-slate-500">{{ token.used_at.strftime('%H:%M') }}</p>
+                    </div>
+                    <div class="text-emerald-400">✓ Valid</div>
+                </div>
+                {% else %}
+                <div class="p-10 text-center text-slate-500 text-sm">No validations today.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    {% elif user.role.value == 'admin' %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-1">
+            <p class="text-slate-500 text-xs font-bold uppercase">Total Cases</p>
+            <p class="text-3xl font-bold text-white">{{ summary.total_cases }}</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-1">
+            <p class="text-slate-500 text-xs font-bold uppercase">Critical Rate</p>
+            <p class="text-3xl font-bold text-red-500">
+                {% if summary.total_cases > 0 %}
+                {{ (summary.flagged_cases / summary.total_cases * 100)|round(1) }}%
+                {% else %}
+                0%
+                {% endif %}
+            </p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-1">
+            <p class="text-slate-500 text-xs font-bold uppercase">Active Tokens</p>
+            <p class="text-3xl font-bold text-blue-400">{{ summary.tokens_issued - summary.tokens_used }}</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-1">
+            <p class="text-slate-500 text-xs font-bold uppercase">Audit Events</p>
+            <p class="text-3xl font-bold text-amber-400">Live</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a href="/admin/flows"
+                class="p-6 bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl transition-all space-y-3">
+                <div class="text-2xl">⚡</div>
+                <h3 class="font-bold text-white">Flow Management</h3>
+                <p class="text-xs text-slate-500">Edit clinical rules and triage paths.</p>
+            </a>
+            <a href="/admin/audit"
+                class="p-6 bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl transition-all space-y-3">
+                <div class="text-2xl">📜</div>
+                <h3 class="font-bold text-white">System Audit Log</h3>
+                <p class="text-xs text-slate-500">Track all security and medical events.</p>
+            </a>
+            <a href="/admin/import"
+                class="p-6 bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl transition-all space-y-3">
+                <div class="text-2xl">📥</div>
+                <h3 class="font-bold text-white">Hospital Data</h3>
+                <p class="text-xs text-slate-500">Import staff and facility CSVs.</p>
+            </a>
+            <a href="/analytics"
+                class="p-6 bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl transition-all space-y-3">
+                <div class="text-2xl">📊</div>
+                <h3 class="font-bold text-white">Performance</h3>
+                <p class="text-xs text-slate-500">Full system analytics and reports.</p>
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500">System Activity</h3>
+            <div class="space-y-4">
+                {% for case in recent_activity %}
+                <div class="flex gap-4">
+                    <div class="w-1 h-12 bg-slate-800 rounded-full shrink-0"></div>
+                    <div>
+                        <p class="text-sm text-white font-medium">New Case Triaged</p>
+                        <p class="text-xs text-slate-500">{{ case.created_at.strftime('%H:%M') }} • ID: {{
+                            case.id|string|truncate(8, True, '') }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

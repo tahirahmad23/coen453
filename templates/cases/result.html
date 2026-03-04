@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge %}
+
+{% block title %}Your Triage Result — CampusTriage{% endblock %}
+
+{% block head_extra %}
+<style>
+    @keyframes pulse-border {
+        0% {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        }
+
+        70% {
+            border-color: rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+
+        100% {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+
+    .emergency-pulse {
+        animation: pulse-border 2s infinite;
+        border-width: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <!-- Outcome Card -->
+    {% if getattr(case, 'outcome', None).value == 'SELF_CARE' %}
+    {% call card(title="Self-Care Recommended", accent="green") %}
+    <div class="flex items-center gap-4 mb-4">
+        <div class="p-3 bg-emerald-400/10 rounded-full text-emerald-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                </path>
+            </svg>
+        </div>
+        <div>
+            <p class="text-slate-100 font-medium">Rest, stay hydrated, and monitor symptoms.</p>
+            <p class="text-slate-400 text-sm">Return if they worsen.</p>
+        </div>
+    </div>
+    <a href="/" class="text-emerald-400 text-sm font-medium hover:underline">Return home</a>
+    {% endcall %}
+    {% elif getattr(case, 'outcome', None).value == 'PHARMACY' %}
+    {% call card(title="Pharmacy Referral", accent="blue") %}
+    <div class="flex items-center gap-4 mb-4">
+        <div class="p-3 bg-blue-400/10 rounded-full text-blue-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+            </svg>
+        </div>
+        <div>
+            {% if outcome_message %}
+            <p class="text-slate-100 font-medium">{{ outcome_message }}</p>
+            {% else %}
+            <p class="text-slate-100 font-medium">Get your prescription token.</p>
+            {% endif %}
+            <p class="text-slate-400 text-sm">Valid at any campus pharmacy pickup point.</p>
+        </div>
+    </div>
+
+    {# Prescription items for the student to see what to expect #}
+    {% if prescriptions %}
+    <div class="mb-5">
+        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Expected Items</h4>
+        <div class="space-y-2">
+            {% for item in prescriptions %}
+            <div class="bg-slate-900/70 border border-blue-400/20 rounded-lg px-3 py-2.5 space-y-0.5">
+                <p class="font-semibold text-slate-100 text-sm">{{ item.name }}</p>
+                <p class="text-xs text-blue-300">{{ item.dose }}</p>
+                {% if item.instructions %}
+                <p class="text-[11px] text-slate-500 italic">{{ item.instructions }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-[11px] text-slate-600 mt-2 italic">Show your token to the pharmacist to collect.</p>
+    </div>
+    {% endif %}
+
+    <a href="/tokens/{{ case.id }}" class="inline-block">
+        {{ btn("View My Token", variant="primary") }}
+    </a>
+    {% endcall %}
+    {% elif getattr(case, 'outcome', None).value == 'CLINIC' %}
+    {% call card(title="Clinic Appointment Required", accent="yellow") %}
+    <div class="flex items-center gap-4 mb-4">
+        <div class="p-3 bg-yellow-400/10 rounded-full text-yellow-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+        </div>
+        <div>
+            <p class="text-slate-100 font-medium">Visit the campus clinic during opening hours.</p>
+            <p class="text-slate-400 text-sm">Please bring your campus ID.</p>
+        </div>
+    </div>
+    <a href="#" class="text-yellow-400 text-sm font-medium hover:underline">View clinic hours & locations</a>
+    {% endcall %}
+    {% elif getattr(case, 'outcome', None).value == 'EMERGENCY' %}
+    <div class="emergency-pulse bg-slate-900 border-red-500 rounded-xl p-6 border-t-2">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-red-400 mb-4">Urgent Action Required</h3>
+        <div class="flex items-center gap-4 mb-6">
+            <div class="p-3 bg-red-400/10 rounded-full text-red-400">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-slate-100 text-xl font-bold">EMERGENCY</p>
+                <p class="text-red-400 font-medium">Do not wait. Proceed to the hospital immediately.</p>
+            </div>
+        </div>
+        <a href="tel:000" class="w-full">
+            {{ btn("Call Emergency Services (000)", variant="danger") }}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Case Reference Info -->
+    <div class="p-4 bg-slate-900 border border-slate-700 rounded-xl text-center">
+        <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">Case Reference</p>
+        <p class="text-slate-200 font-mono text-sm underline decoration-slate-700 underline-offset-4">{{ case.id |
+            string | truncate(8, True, "") }}</p>
+        <p class="text-xs text-slate-600 mt-3">{{ case.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</p>
+        <p class="text-xs text-slate-500 mt-1 italic">Keep this reference for your medical record.</p>
+    </div>
+
+    <div class="space-y-4">
+        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">What happens next?</h4>
+        <div class="text-slate-300 text-sm leading-relaxed space-y-2">
+            {% if getattr(case, 'outcome', None).value == 'SELF_CARE' %}
+            <p>Most minor symptoms resolve on their own with rest. However, if you develop a high fever, severe
+                headache, or chest pain, please restart the assessment or seek medical advice.</p>
+            {% elif getattr(case, 'outcome', None).value == 'PHARMACY' %}
+            <p>Your assessment suggests that your symptoms can be managed with over-the-counter medication. Use the
+                prescription token to collect recommended items from the campus pharmacy.</p>
+            {% elif getattr(case, 'outcome', None).value == 'CLINIC' %}
+            <p>A clinician should review your symptoms in person. The campus clinic is open Monday-Friday, 8am - 6pm. No
+                appointment is needed for triage-referred students.</p>
+            {% elif getattr(case, 'outcome', None).value == 'EMERGENCY' %}
+            <p class="font-bold text-red-100">Seek immediate medical attention. If you are alone, contact a friend or
+                campus security. Do not attempt to drive yourself if you are feeling very unwell.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr class="border-slate-800">
+
+    <div class="text-center">
+        <button hx-post="/api/v1/engine/restart"
+            class="text-slate-500 text-sm hover:text-emerald-400 transition-colors">Start new
+            assessment</button>
+    </div>
+</div>
+{% endblock %}

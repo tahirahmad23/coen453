@@ -1,0 +1,19 @@
+{% from "components/macros.html" import alert, btn %}
+
+<form id="validate-form" hx-post="/api/v1/tokens/validate" hx-target="#validate-form" hx-swap="outerHTML"
+    class="space-y-4">
+
+    <div class="mb-4">
+        {{ alert(error_message, type="error") }}
+    </div>
+
+    <div class="space-y-1.5">
+        <input id="token" name="token" type="text" value="{{ token_input|default('') }}" placeholder="e.g. X4K9PL"
+            maxlength="6" autocomplete="off" autocapitalize="characters" required
+            class="w-full px-4 py-3 rounded-lg bg-slate-800 border-2 border-red-400/50 text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-400/50 transition-colors duration-150 font-mono text-xl text-center tracking-widest uppercase">
+    </div>
+
+    <div class="pt-2">
+        {{ btn("Validate Token", variant="primary", type="submit") }}
+    </div>
+</form>

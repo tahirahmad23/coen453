@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge %}
+
+{% block title %}Flow Management — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white">Symptom Flows</h1>
+            <p class="text-slate-400">Upload, version, and approve clinical decision trees.</p>
+        </div>
+
+        {% if user.role == "admin" %}
+        <button hx-get="/admin/flows/new-modal" hx-target="#modal-container" hx-swap="innerHTML"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-emerald-400 text-slate-950 hover:bg-emerald-300 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Upload New Flow
+        </button>
+        {% endif %}
+    </div>
+
+    <div id="flow-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for flow in flows %}
+        {% include "flows/partials/flow_card.html" %}
+        {% else %}
+        <div class="col-span-full py-20 text-center bg-slate-900/50 border border-dashed border-slate-700 rounded-2xl">
+            <div class="text-slate-500 mb-2">No flows found.</div>
+            <p class="text-sm text-slate-600">Start by uploading a clinical decision JSON.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

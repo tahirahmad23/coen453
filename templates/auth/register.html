@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import field, btn, alert %}
+
+{% block title %}Register — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="max-w-sm mx-auto mt-12">
+    <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold tracking-tight text-emerald-400">CampusTriage</h1>
+        <p class="text-slate-400 mt-2 text-sm">Create an account to access triage services.</p>
+    </div>
+
+    <div id="auth-card" class="bg-slate-900 border border-slate-700 rounded-xl p-6 shadow-xl">
+        {% if error %}
+        <div class="mb-4">
+            {{ alert(error, type="error") }}
+        </div>
+        {% endif %}
+
+        <form hx-post="/api/v1/auth/register" hx-target="#auth-card" hx-select="#auth-card" hx-swap="outerHTML"
+            method="POST" action="/api/v1/auth/register" class="space-y-4">
+            {{ field("email", label="Student Email", type="email", value=email, placeholder="you@campus.edu",
+            required=True) }}
+            {{ field("password", label="Password", type="password", required=True) }}
+
+            <div class="pt-2">
+                {{ btn("Create Account", variant="primary", type="submit", class="w-full") }}
+            </div>
+        </form>
+
+        <div class="mt-6 text-center text-sm text-slate-400">
+            Already have an account?
+            <a href="/login" class="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">Sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

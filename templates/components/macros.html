@@ -1,0 +1,81 @@
+{# Usage: {{ btn("Submit", variant="primary", hx_post="/cases", hx_target="#result") }} #}
+{% macro btn(label, variant="primary", type="button", hx_post=None, hx_get=None, hx_target=None, hx_swap="outerHTML",
+disabled=False, class="") %}
+<button type="{{ type }}" {% if hx_post %}hx-post="{{ hx_post }}" {% endif %} {% if hx_get %}hx-get="{{ hx_get }}" {%
+  endif %} {% if hx_target %}hx-target="{{ hx_target }}" hx-swap="{{ hx_swap }}" {% endif %}
+  hx-indicator="#loading-spinner" {% if disabled %}disabled{% endif %} class="
+    inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium
+    transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-950
+    disabled:opacity-50 disabled:cursor-not-allowed
+    {{ class }}
+    {% if variant == 'primary' %}bg-emerald-400 text-slate-950 hover:bg-emerald-300 focus:ring-emerald-400{% endif %}
+    {% if variant == 'secondary' %}bg-slate-800 text-slate-100 border border-slate-700 hover:bg-slate-700 focus:ring-slate-500{% endif %}
+    {% if variant == 'danger' %}bg-red-500 text-white hover:bg-red-400 focus:ring-red-400{% endif %}
+  ">
+  <span class="htmx-indicator" id="loading-spinner">
+    <!-- spinner SVG -->
+    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+    </svg>
+  </span>
+  {{ label }}
+</button>
+{% endmacro %}
+
+{# Usage: {% call card(title="Patient History", accent="green") %}...{% endcall %} #}
+{% macro card(title=None, accent=None) %}
+<div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden
+  {% if accent == 'green' %}border-t-2 border-t-emerald-400{% endif %}
+  {% if accent == 'blue' %}border-t-2 border-t-blue-400{% endif %}
+  {% if accent == 'red' %}border-t-2 border-t-red-400{% endif %}
+  {% if accent == 'yellow' %}border-t-2 border-t-yellow-400{% endif %}
+">
+  {% if title %}
+  <div class="px-5 py-3 border-b border-slate-700 bg-slate-800">
+    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">{{ title }}</h3>
+  </div>
+  {% endif %}
+  <div class="p-5">{{ caller() }}</div>
+</div>
+{% endmacro %}
+
+{# Usage: {{ badge("PHARMACY", variant="blue") }} #}
+{% macro badge(label, variant="green") %}
+<span class="
+  inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider font-mono
+  {% if variant == 'green' %}bg-emerald-400/10 text-emerald-400 border border-emerald-400/30{% endif %}
+  {% if variant == 'blue' %}bg-blue-400/10 text-blue-400 border border-blue-400/30{% endif %}
+  {% if variant == 'red' %}bg-red-400/10 text-red-400 border border-red-400/30{% endif %}
+  {% if variant == 'yellow' %}bg-yellow-400/10 text-yellow-400 border border-yellow-400/30{% endif %}
+  {% if variant == 'purple' %}bg-purple-400/10 text-purple-400 border border-purple-400/30{% endif %}
+">{{ label }}</span>
+{% endmacro %}
+
+{# Usage: {{ alert("OTP sent to your email", type="success") }} #}
+{% macro alert(message, type="info") %}
+<div class="
+  flex items-start gap-3 px-4 py-3 rounded-lg border text-sm
+  {% if type == 'success' %}bg-emerald-400/5 border-emerald-400/20 text-emerald-400{% endif %}
+  {% if type == 'error' %}bg-red-400/5 border-red-400/20 text-red-400{% endif %}
+  {% if type == 'warning' %}bg-yellow-400/5 border-yellow-400/20 text-yellow-400{% endif %}
+  {% if type == 'info' %}bg-blue-400/5 border-blue-400/20 text-blue-400{% endif %}
+">{{ message }}</div>
+{% endmacro %}
+
+{# Usage: {{ field("email", label="Student Email", type="email", placeholder="you@campus.edu") }} #}
+{% macro field(name, label, type="text", placeholder="", required=True, hint=None, value="") %}
+<div class="space-y-1.5">
+  <label for="{{ name }}" class="block text-xs font-medium uppercase tracking-wider text-slate-400">
+    {{ label }} {% if required %}<span class="text-red-400">*</span>{% endif %}
+  </label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value }}" placeholder="{{ placeholder }}" {% if
+    required %}required{% endif %} class="
+      w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-100
+      placeholder-slate-600 text-sm
+      focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-400/50
+      transition-colors duration-150
+    ">
+  {% if hint %}<p class="text-xs text-slate-500">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}

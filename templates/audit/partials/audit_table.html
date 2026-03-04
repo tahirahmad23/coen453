@@ -1,0 +1,99 @@
+{% from "components/macros.html" import badge %}
+
+<div id="audit-table-container"
+    class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in duration-500">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-slate-950/50 border-b border-slate-800">
+                    <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Timestamp</th>
+                    <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Actor</th>
+                    <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Action</th>
+                    <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Target</th>
+                    <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500">Details</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/50">
+                {% for log in logs %}
+                <tr class="hover:bg-slate-800/20 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-slate-300">{{ log.created_at.strftime('%Y-%m-%d')
+                                }}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">{{ log.created_at.strftime('%H:%M:%S
+                                UTC') }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="text-xs text-slate-400 font-mono">{{ log.actor_id or 'System' }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% set action_variants = {
+                        'FLOW_APPROVED': 'green',
+                        'FLOW_ARCHIVED': 'red',
+                        'FLOW_SUBMITTED': 'yellow',
+                        'USER_CREATED': 'blue',
+                        'CASE_CREATED': 'slate',
+                        'TOKEN_ISSUED': 'indigo',
+                        'TOKEN_USED': 'purple',
+                        'IMPORT_COMPLETED': 'emerald'
+                        } %}
+                        {{ badge(log.action|replace('_', ' ')|capitalize, variant=action_variants.get(log.action,
+                        'slate')) }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase tracking-wider text-slate-600 font-bold">{{
+                                log.target_type }}</span>
+                            <span class="text-[10px] text-slate-500 font-mono truncate max-w-[120px]">{{ log.target_id
+                                or '-' }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if log.diff %}
+                        <button hx-get="/api/v1/admin/audit/{{ log.id }}/diff" hx-target="#modal-container"
+                            hx-swap="innerHTML"
+                            class="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest flex items-center gap-1 transition-colors">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            View Changes
+                        </button>
+                        {% else %}
+                        <span class="text-[10px] text-slate-700 font-bold uppercase tracking-widest">No Diff</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total > page_size %}
+    <div class="px-6 py-4 bg-slate-950/30 border-t border-slate-800 flex items-center justify-between">
+        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            Showing {{ logs|length }} of {{ total }} entries
+        </span>
+        <div class="flex gap-2">
+            {% if current_page > 1 %}
+            <button hx-get="/api/v1/admin/audit?page={{ current_page - 1 }}" hx-target="#audit-table-container"
+                hx-include="closest form"
+                class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-bold uppercase tracking-widest transition-all">
+                Previous
+            </button>
+            {% endif %}
+
+            {% if current_page * page_size < total %} <button hx-get="/api/v1/admin/audit?page={{ current_page + 1 }}"
+                hx-target="#audit-table-container" hx-include="closest form"
+                class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-bold uppercase tracking-widest transition-all">
+                Next
+                </button>
+                {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import btn, card, badge %}
+
+{% block title %}Your Prescription Token — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="max-w-sm mx-auto space-y-6 text-center">
+    {% call card(accent="green" if not is_used and not is_expired else "yellow" if is_used else "red") %}
+    {% if not is_used and not is_expired %}
+
+    <div class="py-8">
+        <div class="w-20 h-20 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center text-4xl mb-4">
+            💊
+        </div>
+        <h2 class="text-xl font-bold text-white font-outfit">Prescription Issued</h2>
+        <p class="text-sm text-slate-400 mt-2 px-4">
+            Show the code below to the university pharmacist to collect your medication.
+        </p>
+    </div>
+
+    {% if token_secret %}
+    <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-8 mb-4">
+        <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">Collection Token</div>
+        <div class="font-mono text-4xl tracking-[0.3em] font-bold text-emerald-400">
+            {{ token_secret }}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-8 mb-4">
+        <div class="font-mono text-3xl tracking-[0.5em] font-bold text-slate-600">
+            ••••••
+        </div>
+        <p class="text-[10px] text-slate-500 mt-4 italic">
+            Token hidden for your security.
+        </p>
+    </div>
+    {% endif %}
+
+    <div
+        class="flex items-center justify-center gap-2 text-sm font-medium {% if danger %}text-red-400{% elif warning %}text-yellow-400{% else %}text-slate-400{% endif %}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Valid for {{ time_remaining }}
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-slate-800/50">
+        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Important</p>
+        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            This token can only be used once. Please do not share it with anyone else.
+        </p>
+    </div>
+
+    {% elif is_used %}
+    <div class="py-12 flex flex-col items-center justify-center space-y-4">
+        <div
+            class="w-20 h-20 rounded-full bg-emerald-400/20 flex items-center justify-center text-emerald-400 text-3xl">
+            ✓
+        </div>
+        <h2 class="text-xl font-bold text-white font-outfit">Redeemed</h2>
+        <p class="text-sm text-slate-400">
+            Used on {{ token.used_at.strftime('%d %b %Y') }} at {{ token.used_at.strftime('%H:%M') }}
+        </p>
+        <a href="/cases/history" class="mt-4 text-emerald-400 hover:text-emerald-300 text-sm font-bold">Back to
+            History</a>
+    </div>
+
+    {% elif is_expired %}
+    <div class="py-12 flex flex-col items-center justify-center space-y-4">
+        <div class="w-20 h-20 rounded-full bg-red-400/20 flex items-center justify-center text-red-400 text-3xl">
+            ✕
+        </div>
+        <h2 class="text-xl font-bold text-white font-outfit">Token Expired</h2>
+        <p class="text-sm text-slate-400 px-6">
+            This token is no longer valid. Please start a new assessment if you still need medication.
+        </p>
+        <a href="/triage" class="mt-4 text-red-400 hover:text-red-300 text-sm font-bold">Start New Assessment</a>
+    </div>
+
+    {% endif %}
+    {% endcall %}
+</div>
+{% endblock %}

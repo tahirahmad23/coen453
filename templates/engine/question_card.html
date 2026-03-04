@@ -1,0 +1,60 @@
+<div id="question-container" class="animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div class="bg-slate-900 border border-slate-700 rounded-xl p-6 space-y-6 shadow-xl">
+
+        <!-- Question Header -->
+        <div class="space-y-2">
+            <h2 class="text-xl font-bold text-slate-100 leading-tight">{{ node.text }}</h2>
+            {% if node.hint %}
+            <p class="text-sm text-slate-500 leading-relaxed">{{ node.hint }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Answer Options -->
+        <div class="space-y-3">
+            {% for option in node.options %}
+            <button hx-post="/api/v1/engine/answer"
+                hx-vals='{"node_id": "{{ node_id }}", "option_label": "{{ option.label }}"}'
+                hx-target="#question-container" hx-swap="outerHTML" hx-indicator="#q-loading" class="
+                    w-full text-left px-5 py-4 rounded-lg border-2 transition-all duration-200
+                    {% if selected_option == option.label %}
+                        bg-emerald-400/10 border-emerald-400 text-emerald-400
+                    {% else %}
+                        bg-slate-800 border-slate-700 text-slate-100 hover:border-emerald-400/50 hover:bg-emerald-400/5
+                    {% endif %}
+                    focus:outline-none focus:ring-2 focus:ring-emerald-400/50 group
+                ">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ option.label }}</span>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-400 text-lg">→</span>
+                </div>
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Navigation Footer -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+            <div>
+                {% if can_go_back %}
+                <button hx-get="/api/v1/engine/previous" hx-target="#question-container" hx-swap="outerHTML"
+                    hx-indicator="#q-loading"
+                    class="text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-2">
+                    <span class="text-lg">←</span> Back
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div id="q-loading" class="htmx-indicator">
+                    <div class="flex items-center gap-2 text-xs text-slate-500 font-mono italic">
+                        <svg class="animate-spin h-3 w-3 text-emerald-400" viewBox="0 0 24 24" fill="none">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        Processing...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

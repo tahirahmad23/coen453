@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import card, badge, btn %}
+
+{% block title %}Analytics Dashboard — CampusTriage{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-slate-100">Analytics Overview</h1>
+        <p class="text-sm text-slate-500">System-wide triage performance and health metrics</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl space-y-2">
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Total Assessments</p>
+            <p class="text-3xl font-bold text-slate-100">{{ summary.total_cases }}</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl space-y-2">
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Flagged Cases</p>
+            <p class="text-3xl font-bold text-red-400">{{ summary.flagged_cases }}</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl space-y-2">
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Tokens Issued</p>
+            <p class="text-3xl font-bold text-blue-400">{{ summary.tokens_issued }}</p>
+        </div>
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl space-y-2">
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-500">Tokens Redeemed</p>
+            <p class="text-3xl font-bold text-emerald-400">{{ summary.tokens_used }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Outcome Distribution -->
+        <div class="lg:col-span-1">
+            {% call card(title="Outcome Distribution") %}
+            <div class="space-y-6">
+                {% for outcome, count in outcomes.items() %}
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs font-medium">
+                        <span class="text-slate-300">{{ outcome }}</span>
+                        <span class="text-slate-500">{{ count }}</span>
+                    </div>
+                    {% set percent = (count / summary.total_cases * 100) if summary.total_cases > 0 else 0 %}
+                    <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500
+                                    {% if outcome == 'EMERGENCY' %}bg-red-500
+                                    {% elif outcome == 'CLINIC' %}bg-yellow-500
+                                    {% elif outcome == 'PHARMACY' %}bg-blue-500
+                                    {% else %}bg-emerald-500{% endif %}" style="width: {{ percent }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endcall %}
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="lg:col-span-2">
+            <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Recent Assessments</h3>
+                    <a href="/clinician/cases" class="text-[10px] text-emerald-400 font-bold hover:underline">View All
+                        →</a>
+                </div>
+                <div class="divide-y divide-slate-800">
+                    {% for case in recent_cases %}
+                    <div class="px-6 py-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-2 h-2 rounded-full {% if case.is_flagged %}bg-red-500 animate-pulse{% else %}bg-slate-700{% endif %}">
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-slate-200">#{{ case.id | string | truncate(8, True,
+                                    '') }}</p>
+                                <p class="text-[10px] text-slate-500">{{ case.created_at.strftime('%H:%M • %b %d') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            {% set variant = 'green' if case.outcome.value == 'SELF_CARE' else 'blue' if
+                            case.outcome.value == 'PHARMACY' else 'yellow' if case.outcome.value == 'CLINIC' else 'red'
+                            %}
+                            {{ badge(case.outcome.value, variant=variant) }}
+                            <a href="/clinician/cases/{{ case.id }}" class="text-slate-500 hover:text-slate-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_cases %}
+                    <div class="p-12 text-center text-slate-500 text-sm">
+                        No recent assessments recorded yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

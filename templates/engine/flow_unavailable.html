@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import card, btn %}
+
+{% block title %}Triage Unavailable{% endblock %}
+
+{% block content %}
+<div class="max-w-sm mx-auto">
+    {% call card(title="System Message", accent="yellow") %}
+    <div class="text-center space-y-4">
+        <div class="text-4xl">⚠️</div>
+        <div class="space-y-2">
+            <h2 class="text-lg font-bold">Triage System is Offline</h2>
+            <p class="text-sm text-slate-500">
+                We are currently updating our triage rules. Please visit the campus clinic directly for assistance.
+            </p>
+        </div>
+        <div class="pt-4">
+            <a href="/dashboard" class="text-sm text-emerald-400 hover:underline">Back to Dashboard</a>
+        </div>
+    </div>
+    {% endcall %}
+</div>
+{% endblock %}

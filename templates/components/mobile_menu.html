@@ -1,0 +1,24 @@
+<div class="md:hidden border-t border-slate-800 bg-slate-950 px-4 py-3 space-y-1">
+    <!-- Same links as desktop, but stacked vertically, larger touch targets -->
+    {% if user.role.value == 'student' %}
+    <a href="/triage" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">New Assessment</a>
+    <a href="/cases/history" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">My History</a>
+    {% elif user.role.value == 'clinician' %}
+    <a href="/clinician/cases" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Cases</a>
+    <a href="/admin/flows" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Flows</a>
+    <a href="/analytics" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Analytics</a>
+    {% elif user.role.value == 'pharmacist' %}
+    <a href="/pharmacy/validate" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Validate
+        Token</a>
+    {% elif user.role.value == 'admin' %}
+    <a href="/admin/flows" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Flows</a>
+    <a href="/clinician/cases" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Cases</a>
+    <a href="/admin/audit" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Audit Log</a>
+    <a href="/analytics" class="block px-3 py-3 rounded-lg text-sm text-slate-300 hover:bg-slate-800">Analytics</a>
+    {% endif %}
+
+    <form action="/logout" method="POST">
+        <button type="submit"
+            class="block px-3 py-3 rounded-lg text-slate-300 hover:bg-slate-800 text-red-400 w-full text-left">Logout</button>
+    </form>
+</div>
