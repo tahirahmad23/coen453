@@ -52,4 +52,6 @@ async def import_csv_route(
             "user": current_user
         }, status_code=400)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.getLogger(__name__).exception("Error importing CSV")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")

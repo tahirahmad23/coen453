@@ -13,6 +13,7 @@ from app.modules.auth.schemas import UserContext
 from app.modules.cases import service as case_service
 from app.modules.analytics import service as analytics_service
 from app.modules.tokens import service as token_service
+from app.core import exceptions as app_exceptions
 
 router = APIRouter(prefix="", tags=["auth"])
 
@@ -57,6 +58,8 @@ async def login_route(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Authenticate and set session cookie."""
+    import logging
+    logger = logging.getLogger(__name__)
     try:
         user = await auth_service.authenticate_user(db, email, password)
         session_value = create_session_cookie(str(user.id), user.role.value)
@@ -73,8 +76,7 @@ async def login_route(
             samesite="lax",
         )
         return response
-    except Exception as e:
-        # Return only the form partial/alert for HTMX or the full page for regular requests
+    except app_exceptions.AuthError as e:
         if request.headers.get("HX-Request"):
             return templates.TemplateResponse(
                 request, "auth/login.html", {"error": str(e), "email": email},
@@ -82,6 +84,17 @@ async def login_route(
             )
         return templates.TemplateResponse(
             request, "auth/login.html", {"error": str(e), "email": email}
+        )
+    except Exception as e:
+        logger.exception("Unexpected error during login")
+        error_msg = "An unexpected error occurred. Please try again later."
+        if request.headers.get("HX-Request"):
+            return templates.TemplateResponse(
+                request, "auth/login.html", {"error": error_msg, "email": email},
+                headers={"HX-Retarget": "#auth-card"}
+            )
+        return templates.TemplateResponse(
+            request, "auth/login.html", {"error": error_msg, "email": email}
         )
 
 
@@ -93,6 +106,8 @@ async def register_route(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     """Register and set session cookie."""
+    import logging
+    logger = logging.getLogger(__name__)
     try:
         user = await auth_service.register_user(db, email, password)
         session_value = create_session_cookie(str(user.id), user.role.value)
@@ -109,7 +124,7 @@ async def register_route(
             samesite="lax",
         )
         return response
-    except Exception as e:
+    except app_exceptions.AuthError as e:
         if request.headers.get("HX-Request"):
             return templates.TemplateResponse(
                 request, "auth/register.html", {"error": str(e), "email": email},
@@ -117,6 +132,17 @@ async def register_route(
             )
         return templates.TemplateResponse(
             request, "auth/register.html", {"error": str(e), "email": email}
+        )
+    except Exception as e:
+        logger.exception("Unexpected error during registration")
+        error_msg = "An unexpected error occurred. Please try again later."
+        if request.headers.get("HX-Request"):
+            return templates.TemplateResponse(
+                request, "auth/register.html", {"error": error_msg, "email": email},
+                headers={"HX-Retarget": "#auth-card"}
+            )
+        return templates.TemplateResponse(
+            request, "auth/register.html", {"error": error_msg, "email": email}
         )
 
 @router.post("/logout", summary="Logout")

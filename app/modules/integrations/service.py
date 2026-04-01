@@ -125,4 +125,4 @@ async def import_hospital_csv(
 
     except Exception as e:
         logger.exception("Hospital CSV import failed")
-        raise ValueError(str(e))
+        raise ValueError("Failed to import CSV. Please ensure the format matches the expectations.")

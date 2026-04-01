@@ -99,7 +99,9 @@ async def create_flow_route(
             "error": str(e)
         }, status_code=200)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.getLogger(__name__).exception("Error creating flow")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")
 @router.put("/api/v1/admin/flows/{flow_id}", summary="Update flow")
 async def update_flow_route(
     request: Request,
@@ -124,7 +126,9 @@ async def update_flow_route(
         # Return 200 for HTMX so the error message is swapped into the container
         return HTMLResponse(content=f'<div class="text-red-400 text-xs p-2">{str(e)}</div>', status_code=200)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.getLogger(__name__).exception("Error updating flow")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")
 
 
 @router.delete("/api/v1/admin/flows/{flow_id}", summary="Delete flow")
@@ -148,7 +152,9 @@ async def delete_flow_route(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import logging
+        logging.getLogger(__name__).exception("Error deleting flow")
+        raise HTTPException(status_code=500, detail="An internal server error occurred.")
 
 @router.put("/api/v1/admin/flows/{flow_id}/submit", summary="Submit for approval")
 async def submit_flow_route(
@@ -240,4 +246,6 @@ async def test_flow_sandbox_route(
     except json.JSONDecodeError:
         return HTMLResponse(content='<div class="text-red-400 text-xs">Invalid JSON in answers</div>', status_code=400)
     except Exception as e:
-        return HTMLResponse(content=f'<div class="text-red-400 text-xs">{str(e)}</div>', status_code=400)
+        import logging
+        logging.getLogger(__name__).exception("Error testing flow sandbox")
+        return HTMLResponse(content='<div class="text-red-400 text-xs text-center border border-red-400 bg-red-900/20 p-2 rounded">An internal server error occurred.</div>', status_code=400)
