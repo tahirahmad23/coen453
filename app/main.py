@@ -19,8 +19,8 @@ from app.modules.analytics.routes import router as analytics_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.integrations.routes import router as integrations_router
 
-if settings.sentry_dsn:
-    sentry_sdk.init(dsn=settings.sentry_dsn, environment=settings.environment)
+# if settings.sentry_dsn:
+#     sentry_sdk.init(dsn=settings.sentry_dsn, environment=settings.environment)
 
 from starlette.middleware.sessions import SessionMiddleware
 
