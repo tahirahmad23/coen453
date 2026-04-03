@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     database_url: str
+    direct_url: str | None = None          # Supabase direct (non-pooled) URL for migrations
     redis_url: str
     redis_token: str
     secret_key: str                    # for itsdangerous cookie signing
