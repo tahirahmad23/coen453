@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 
 from app.core.database import AsyncSessionLocal
 from app.core.enums import Role, CaseStatus, CaseOutcome, FlowStatus
+from app.core.security import encrypt_field
 from app.modules.auth.models import User
 from app.modules.cases.models import Case
 from app.modules.flows.models import SymptomFlow
@@ -526,7 +527,7 @@ async def seed():
         c1 = Case(
             user_id=users_map[Role.STUDENT].id,
             flow_id=flow.id,
-            answers_enc="{}",
+            answers_enc=encrypt_field("{}"),
             status=CaseStatus.PENDING,
             score=7,
             is_flagged=True,
@@ -537,7 +538,7 @@ async def seed():
         c2 = Case(
             user_id=users_map[Role.STUDENT].id,
             flow_id=flow.id,
-            answers_enc="{}",
+            answers_enc=encrypt_field("{}"),
             status=CaseStatus.TRIAGED,
             outcome=CaseOutcome.PHARMACY,
             score=3,
@@ -549,7 +550,7 @@ async def seed():
         c3 = Case(
             user_id=users_map[Role.STUDENT].id,
             flow_id=flow.id,
-            answers_enc="{}",
+            answers_enc=encrypt_field("{}"),
             status=CaseStatus.CLOSED,
             outcome=CaseOutcome.SELF_CARE,
             score=1,

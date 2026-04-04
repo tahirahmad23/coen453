@@ -31,8 +31,14 @@ from app.modules.cases.models import Case
 from app.modules.tokens.models import PrescriptionToken
 from app.modules.audit.models import AuditLog
 
-# Override the DB URL from config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+# For migrations, prefer DIRECT_URL (bypasses pgbouncer, supports prepared statements)
+# If not set, fall back to DATABASE_URL but warn.
+_migration_url = settings.direct_url or settings.database_url
+# Ensure we use the asyncpg driver — convert plain postgresql:// if needed
+if _migration_url.startswith("postgresql://"):
+    _migration_url = _migration_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+config.set_main_option("sqlalchemy.url", _migration_url)
 target_metadata = Base.metadata
 
 def run_migrations_offline() -> None:
@@ -76,6 +82,7 @@ async def run_async_migrations() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"statement_cache_size": 0},  # safe for both direct and pooler connections
     )
 
     async with connectable.connect() as connection:

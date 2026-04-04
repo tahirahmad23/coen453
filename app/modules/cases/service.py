@@ -147,9 +147,18 @@ async def override_case(
 
 
 def get_case_answers(case: Case) -> dict:
-    """Decrypt and parse answers JSON."""
-    plaintext = decrypt_field(case.answers_enc)
-    return json.loads(plaintext)
+    """Decrypt and parse answers JSON. Handles legacy/seeded cases with plaintext."""
+    import logging
+    try:
+        plaintext = decrypt_field(case.answers_enc)
+        return json.loads(plaintext)
+    except ValueError:
+        # answers_enc is not Fernet-encrypted — try parsing as raw JSON (seed data / historical import)
+        try:
+            return json.loads(case.answers_enc)
+        except (json.JSONDecodeError, TypeError):
+            logging.getLogger(__name__).warning("Could not decrypt or parse answers_enc for case %s", case.id)
+            return {}
 
 
 async def get_case_by_id(db: AsyncSession, case_id: uuid.UUID) -> Case | None:

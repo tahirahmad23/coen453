@@ -24,43 +24,51 @@
     </div>
     {% else %}
     <div class="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden">
-        <table class="w-full text-left text-sm">
-            <thead class="bg-slate-800 border-b border-slate-700">
-                <tr>
-                    <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Date</th>
-                    <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Outcome
-                    </th>
-                    <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Status</th>
-                    <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px] text-right">
-                        Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-800">
-                {% for case in cases %}
-                <tr class="hover:bg-slate-800 transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-300">
-                        {{ case.created_at.strftime('%b %d, %H:%M') }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {% set variant = 'green' if getattr(case, 'outcome', None).value == 'SELF_CARE' else 'blue' if
-                        getattr(case, 'outcome', None).value == 'PHARMACY' else 'yellow' if getattr(case, 'outcome',
-                        None).value ==
-                        'CLINIC' else 'red' %}
-                        {{ badge(case.outcome.value, variant=variant) }}
-                    </td>
-                    <td class="px-6 py-4">
-                        {{ badge(case.status.value, variant='purple' if case.status.value == 'OVERRIDDEN' else 'green'
-                        if
-                        case.status.value == 'TRIAGED' else 'yellow') }}
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <a href="/cases/{{ case.id }}" class="text-emerald-400 hover:text-emerald-300 font-medium">View
-                            Result</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-800 border-b border-slate-700">
+                    <tr>
+                        <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Date
+                        </th>
+                        <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Outcome
+                        </th>
+                        <th class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px]">Status
+                        </th>
+                        <th
+                            class="px-6 py-3 font-semibold text-slate-300 uppercase tracking-widest text-[10px] text-right">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {% for case in cases %}
+                    <tr class="hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap text-slate-300">
+                            {{ case.created_at.strftime('%b %d, %H:%M') }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% set variant = 'green' if getattr(case, 'outcome', None).value == 'SELF_CARE' else 'blue'
+                            if
+                            getattr(case, 'outcome', None).value == 'PHARMACY' else 'yellow' if getattr(case, 'outcome',
+                            None).value ==
+                            'CLINIC' else 'red' %}
+                            {{ badge(case.outcome.value, variant=variant) }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ badge(case.status.value, variant='purple' if case.status.value == 'OVERRIDDEN' else
+                            'green'
+                            if
+                            case.status.value == 'TRIAGED' else 'yellow') }}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="/cases/{{ case.id }}"
+                                class="text-emerald-400 hover:text-emerald-300 font-medium">View
+                                Result</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     {% if total > page_size %}

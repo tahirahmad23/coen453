@@ -83,17 +83,26 @@ async def case_result_page(
 @router.get("/clinician/cases", summary="Manage cases")
 async def clinician_case_list(
     request: Request,
-    outcome: CaseOutcome | None = None,
-    status: CaseStatus | None = None,
-    date_from: datetime.date | None = None,
+    outcome: str | None = None,
+    status: str | None = None,
+    date_from: str | None = None,
     page: int = 1,
     db: AsyncSession = Depends(get_db),
     current_user: UserContext = Depends(require_role(Role.CLINICIAN, Role.ADMIN)),
 ):
     """Filter and view all cases."""
-    dt_from = datetime.datetime.combine(date_from, datetime.time.min) if date_from else None
+    parsed_outcome = CaseOutcome(outcome) if outcome else None
+    parsed_status = CaseStatus(status) if status else None
+    
+    dt_from = None
+    if date_from:
+        try:
+            dt_from = datetime.datetime.combine(datetime.date.fromisoformat(date_from), datetime.time.min)
+        except ValueError:
+            pass
+
     cases, total = await case_service.get_cases_for_clinician(
-        db, outcome=outcome, status=status, date_from=dt_from, page=page
+        db, outcome=parsed_outcome, status=parsed_status, date_from=dt_from, page=page
     )
 
     context = {
@@ -102,7 +111,7 @@ async def clinician_case_list(
         "total": total,
         "page": page,
         "page_size": 20,
-        "filters": {"outcome": outcome, "status": status, "date_from": date_from},
+        "filters": {"outcome": parsed_outcome, "status": parsed_status, "date_from": date_from},
     }
 
     if request.headers.get("HX-Request"):
