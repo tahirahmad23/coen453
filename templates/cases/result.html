@@ -106,7 +106,6 @@
             <p class="text-slate-400 text-sm">Please bring your campus ID.</p>
         </div>
     </div>
-    <a href="#" class="text-yellow-400 text-sm font-medium hover:underline">View clinic hours & locations</a>
     {% endcall %}
     {% elif getattr(case, 'outcome', None).value == 'EMERGENCY' %}
     <div class="emergency-pulse bg-slate-900 border-red-500 rounded-xl p-6 border-t-2">
@@ -160,10 +159,6 @@
 
     <hr class="border-slate-800">
 
-    <div class="text-center">
-        <button hx-post="/api/v1/engine/restart"
-            class="text-slate-500 text-sm hover:text-emerald-400 transition-colors">Start new
-            assessment</button>
-    </div>
+
 </div>
 {% endblock %}
